@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use crate::Solution;
 use nom::{
     IResult, Parser,
@@ -26,18 +28,67 @@ fn parse_input(input: &str) -> IResult<&str, Vec<Range>> {
 impl Solution for Day02 {
     fn part1(&self, input: &str) -> String {
         let (_, lines) = parse_input(input).expect("Failed to parse input");
-        // TODO: Implement part 1 logic
+        let mut set: HashSet<u64> = HashSet::new();
+        for range in &lines {
+            sum_invalid(range, 2, &mut set);
+        }
+        let total_sum_invalid: u64 = set.iter().sum();
         format!(
-            "Parsed {} ranges",
+            "Parsed {} ranges, sum of invalid: {:?}",
             lines.len(),
+            total_sum_invalid
         )
     }
 
     fn part2(&self, input: &str) -> String {
         let lines = parse_input(input).expect("Failed to parse input").1;
-        // TODO: Implement part 2 logic
-        format!("Parsed {} lines", lines.len())
+        let mut set: HashSet<u64> = HashSet::new();
+        for range in &lines {
+            for k in 2..=num_length(range.end) {
+                sum_invalid(range, k, &mut set);
+            }
+        }
+        let total_sum_invalid: u64 = set.iter().sum();
+        format!(
+            "Parsed {} ranges, sum of invalid: {:?}",
+            lines.len(),
+            total_sum_invalid
+        )
     }
+}
+fn sum_invalid(range: &Range, k: u32, set: &mut HashSet<u64>) {
+    // dbg!((range, k));
+    let start_len = num_length(range.start);
+    let end_len = num_length(range.end);
+
+    // If either is even, divide that length by 2
+    let n = if start_len % k == 0 || end_len % k == 0 {
+        end_len / k
+    } else {
+        return;
+    };
+    // Find the number of
+    let div = (0..k).into_iter().map(|i| 10u64.pow(i * n)).sum::<u64>();
+    let mut a = (range.start + div - 1) / div;
+    let mut b = range.end / div;
+    if end_len % k != 0 {
+        b = 10u64.pow(n) - 1;
+    }
+    if start_len % k != 0 {
+        a = 10u64.pow(n - 1);
+    }
+    for i in a..=b {
+        set.insert(i * div);
+    }
+}
+
+fn num_length(mut n: u64) -> u32 {
+    let mut length = 0;
+    while n > 0 {
+        n /= 10;
+        length += 1;
+    }
+    length
 }
 
 #[cfg(test)]
