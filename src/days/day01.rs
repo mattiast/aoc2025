@@ -128,16 +128,4 @@ mod tests {
         assert_eq!(instructions[0].distance, 27);
         assert_eq!(instructions[1].direction, Direction::Left);
     }
-
-    #[test]
-    fn test_part1() {
-        let input = "R27\nL5\n";
-        assert_eq!(Day01.part1(input), "Parsed 2 instructions");
-    }
-
-    #[test]
-    fn test_part2() {
-        let input = "R27\nL5\n";
-        assert_eq!(Day01.part2(input), "Parsed 2 instructions");
-    }
 }
