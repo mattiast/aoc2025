@@ -25,18 +25,9 @@ fn parse_input(input: &str) -> IResult<&str, Grid> {
 impl Solution for Day03 {
     fn part1(&self, input: &str) -> String {
         let (_, grid) = parse_input(input).expect("Failed to parse input");
-        let mut joltage = 0u32;
+        let mut joltage = 0u64;
         for line in &grid {
-            let n = line.len();
-            let mut a = line[n - 2];
-            let mut b = line[n - 1];
-            for &digit in line[..n - 2].iter().rev() {
-                if digit >= a {
-                    b = b.max(a);
-                    a = digit;
-                }
-            }
-            joltage += (a * 10 + b) as u32;
+            joltage += find_joltage::<2>(line);
         }
         format!(
             "Parsed grid: {} rows x {} cols, total joltage {}",
@@ -52,37 +43,42 @@ impl Solution for Day03 {
         let m = grid.len();
         let n = grid[0].len();
         for line in &grid {
-            let mut noi: [u8; 12] = line[n - 12..].try_into().unwrap();
-            for &digit in line[..n - 12].iter().rev() {
-                let mut newnoi = noi;
-                if digit >= noi[0] {
-                    newnoi[0] = digit;
-                } else {
-                    continue;
-                }
-                for i in 1..12 {
-                    if noi[i - 1] >= noi[i] {
-                        newnoi[i] = noi[i - 1];
-                    } else {
-                        break;
-                    }
-                }
-                noi = newnoi;
-            }
-            let joltage = {
-                let mut acc = 0u64;
-                for &digit in &noi[..] {
-                    acc = acc * 10 + digit as u64;
-                }
-                acc
-            };
-            total_joltage += joltage;
+            total_joltage += find_joltage::<12>(line);
         }
         format!(
             "Parsed grid: {} rows x {} cols, total joltage {}",
             m, n, total_joltage
         )
     }
+}
+
+fn find_joltage<const N: usize>(line: &[u8]) -> u64 {
+    let n = line.len();
+    let mut noi: [u8; N] = line[n - N..].try_into().unwrap();
+    for &digit in line[..n - N].iter().rev() {
+        let mut newnoi = noi;
+        if digit >= noi[0] {
+            newnoi[0] = digit;
+        } else {
+            continue;
+        }
+        for i in 1..N {
+            if noi[i - 1] >= noi[i] {
+                newnoi[i] = noi[i - 1];
+            } else {
+                break;
+            }
+        }
+        noi = newnoi;
+    }
+    let joltage = {
+        let mut acc = 0u64;
+        for &digit in &noi[..] {
+            acc = acc * 10 + digit as u64;
+        }
+        acc
+    };
+    joltage
 }
 
 #[cfg(test)]
