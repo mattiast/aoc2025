@@ -53,28 +53,30 @@ impl Solution for Day04 {
         let rows = grid.len();
         let cols = grid.first().map(|r| r.len()).unwrap_or(0);
 
-        let mut num_reachable_paper_rolls = 0;
-        for i in 0..rows {
-            for j in 0..cols {
-                let num_neighbor_rolls = neighbors(&grid, i, j)
-                    .iter()
-                    .filter(|&&(nr, nc)| grid[nr][nc].is_paper_roll())
-                    .count();
-                if num_neighbor_rolls < 4 && grid[i][j].is_paper_roll() {
-                    num_reachable_paper_rolls += 1;
-                }
-            }
+        let num_reachable_paper_rolls = find_reachable_paper_rolls(&grid).len();
 
-        }
-
-        format!("Parsed grid: {} rows x {} cols. Reachable: {}", rows, cols, num_reachable_paper_rolls)
+        format!(
+            "Parsed grid: {} rows x {} cols. Reachable: {}",
+            rows, cols, num_reachable_paper_rolls
+        )
     }
 
     fn part2(&self, input: &str) -> String {
-        let (_, _grid) = parse_input_complete(input)
+        let (_, mut grid) = parse_input_complete(input)
             .or_else(|_| parse_input(input))
             .expect("Failed to parse input");
-        "Part 2 TODO".to_string()
+        let mut num_removed = 0;
+        loop {
+            let reachable_rolls = find_reachable_paper_rolls(&grid);
+            if reachable_rolls.is_empty() {
+                break;
+            }
+            for (i, j) in reachable_rolls {
+                grid[i][j] = Cell::Empty;
+                num_removed += 1;
+            }
+        }
+        format!("Removable: {}", num_removed)
     }
 }
 
@@ -106,6 +108,29 @@ fn neighbors(grid: &Grid, row: usize, col: usize) -> Vec<(usize, usize)> {
     result
 }
 
+fn find_reachable_paper_rolls(grid: &Grid) -> Vec<(usize, usize)> {
+    let rows = grid.len();
+    let cols = grid.first().map(|r| r.len()).unwrap_or(0);
+
+    let mut reachable_rolls = Vec::new();
+
+    for i in 0..rows {
+        for j in 0..cols {
+            if grid[i][j].is_paper_roll() {
+                let num_neighbor_rolls = neighbors(grid, i, j)
+                    .iter()
+                    .filter(|&&(nr, nc)| grid[nr][nc].is_paper_roll())
+                    .count();
+                if num_neighbor_rolls < 4 {
+                    reachable_rolls.push((i, j));
+                }
+            }
+        }
+    }
+
+    reachable_rolls
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -130,6 +155,11 @@ mod tests {
             "Expected output to contain '13', got: {}",
             output
         );
+    }
+    #[test]
+    fn test_part2_sample() {
+        let output = Day04.part2(SAMPLE_INPUT);
+        assert!(output.contains("43"), "Unexpected output: {}", output);
     }
 
     #[test]
