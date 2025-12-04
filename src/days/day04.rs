@@ -76,7 +76,21 @@ impl Solution for Day04 {
                 num_removed += 1;
             }
         }
+        print_grid(&grid);
         format!("Removable: {}", num_removed)
+    }
+}
+
+fn print_grid(grid: &Grid) {
+    for row in grid {
+        for cell in row {
+            let c = match cell {
+                Cell::Empty => '.',
+                Cell::PaperRoll => '@',
+            };
+            print!("{}", c);
+        }
+        println!();
     }
 }
 
