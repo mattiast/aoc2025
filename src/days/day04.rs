@@ -16,6 +16,12 @@ pub enum Cell {
     PaperRoll,
 }
 
+impl Cell {
+    pub fn is_paper_roll(&self) -> bool {
+        matches!(self, Cell::PaperRoll)
+    }
+}
+
 pub type Grid = Vec<Vec<Cell>>;
 
 fn parse_cell(input: &str) -> IResult<&str, Cell> {
@@ -46,16 +52,22 @@ impl Solution for Day04 {
 
         let rows = grid.len();
         let cols = grid.first().map(|r| r.len()).unwrap_or(0);
-        let paper_rolls = grid
-            .iter()
-            .flatten()
-            .filter(|&&cell| cell == Cell::PaperRoll)
-            .count();
 
-        format!(
-            "Parsed grid: {} rows x {} cols, {} paper rolls",
-            rows, cols, paper_rolls
-        )
+        let mut num_reachable_paper_rolls = 0;
+        for i in 0..rows {
+            for j in 0..cols {
+                let num_neighbor_rolls = neighbors(&grid, i, j)
+                    .iter()
+                    .filter(|&&(nr, nc)| grid[nr][nc].is_paper_roll())
+                    .count();
+                if num_neighbor_rolls < 4 && grid[i][j].is_paper_roll() {
+                    num_reachable_paper_rolls += 1;
+                }
+            }
+
+        }
+
+        format!("Parsed grid: {} rows x {} cols. Reachable: {}", rows, cols, num_reachable_paper_rolls)
     }
 
     fn part2(&self, input: &str) -> String {
@@ -64,6 +76,34 @@ impl Solution for Day04 {
             .expect("Failed to parse input");
         "Part 2 TODO".to_string()
     }
+}
+
+fn neighbors(grid: &Grid, row: usize, col: usize) -> Vec<(usize, usize)> {
+    let mut result = Vec::new();
+    let rows = grid.len() as isize;
+    let cols = grid.first().map(|r| r.len() as isize).unwrap_or(0);
+
+    let directions = [
+        (-1, -1),
+        (-1, 0),
+        (-1, 1),
+        (0, -1),
+        (0, 1),
+        (1, -1),
+        (1, 0),
+        (1, 1),
+    ];
+
+    for (dr, dc) in directions.iter() {
+        let new_row = row as isize + dr;
+        let new_col = col as isize + dc;
+
+        if new_row >= 0 && new_row < rows && new_col >= 0 && new_col < cols {
+            result.push((new_row as usize, new_col as usize));
+        }
+    }
+
+    result
 }
 
 #[cfg(test)]
@@ -85,7 +125,11 @@ mod tests {
     #[test]
     fn test_part1_sample() {
         let output = Day04.part1(SAMPLE_INPUT);
-        assert!(output.contains("13"), "Expected output to contain '13', got: {}", output);
+        assert!(
+            output.contains("13"),
+            "Expected output to contain '13', got: {}",
+            output
+        );
     }
 
     #[test]
