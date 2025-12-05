@@ -26,6 +26,72 @@ pub struct Input {
     pub numbers: Vec<u64>,
 }
 
+fn merge_ranges(sorted_ranges: &[Range]) -> Vec<Range> {
+    let mut iterator = sorted_ranges.iter();
+
+    let mut merged_ranges = Vec::new();
+    let mut current_range = match iterator.next() {
+        Some(r) => *r,
+        None => return merged_ranges,
+    };
+    for &range in iterator {
+        if range.start <= current_range.end + 1 {
+            current_range.end = current_range.end.max(range.end);
+        } else {
+            merged_ranges.push(current_range);
+            current_range = range;
+        }
+    }
+    merged_ranges.push(current_range);
+    merged_ranges
+}
+
+impl Solution for Day05 {
+    fn part1(&self, input: &str) -> String {
+        let (_, mut data) = parse_input_complete(input).expect("Failed to parse input");
+        data.ranges.sort_by_key(|r| r.start);
+
+        let merged_ranges = merge_ranges(&data.ranges);
+
+        let mut num_fresh = 0;
+        for &number in &data.numbers {
+            let search_res = merged_ranges.binary_search_by(|r| {
+                if r.contains(number) {
+                    std::cmp::Ordering::Equal
+                } else if number < r.start {
+                    std::cmp::Ordering::Greater
+                } else {
+                    std::cmp::Ordering::Less
+                }
+            });
+            if search_res.is_ok() {
+                num_fresh += 1;
+            }
+        }
+
+        format!(
+            "Parsed {} ranges and {} numbers, {} numbers are within at least one range.",
+            data.ranges.len(),
+            data.numbers.len(),
+            num_fresh
+        )
+    }
+
+    fn part2(&self, input: &str) -> String {
+        let (_, mut data) = parse_input_complete(input).expect("Failed to parse input");
+        data.ranges.sort_by_key(|r| r.start);
+
+        let merged_ranges = merge_ranges(&data.ranges);
+        let total_covered: u64 = merged_ranges.iter().map(|r| r.end - r.start + 1).sum();
+
+        format!(
+            "After merging, there are {} ranges covering a total of {} numbers.",
+            merged_ranges.len(),
+            total_covered
+        )
+    }
+}
+
 fn parse_range(input: &str) -> IResult<&str, Range> {
     let (input, (start, end)) = separated_pair(nom_u64, char('-'), nom_u64).parse(input)?;
     Ok((input, Range { start, end }))
@@ -47,56 +113,6 @@ fn parse_input(input: &str) -> IResult<&str, Input> {
 
 fn parse_input_complete(input: &str) -> IResult<&str, Input> {
     terminated(parse_input, many1(newline)).parse(input)
-}
-
-impl Solution for Day05 {
-    fn part1(&self, input: &str) -> String {
-        let (_, data) = parse_input_complete(input).expect("Failed to parse input");
-
-        let mut num_fresh = 0;
-        for &number in &data.numbers {
-            if data.ranges.iter().any(|range| range.contains(number)) {
-                num_fresh += 1;
-            }
-        }
-
-        format!(
-            "Parsed {} ranges and {} numbers, {} numbers are within at least one range.",
-            data.ranges.len(),
-            data.numbers.len(),
-            num_fresh
-        )
-    }
-
-    fn part2(&self, input: &str) -> String {
-        let (_, mut data) = parse_input_complete(input).expect("Failed to parse input");
-        data.ranges.sort_by_key(|r| r.start);
-
-        let mut iterator = data.ranges.iter();
-
-        let mut current_range = match iterator.next() {
-            Some(r) => *r,
-            None => return "No ranges provided.".to_string(),
-        };
-        let mut merged_ranges = Vec::new();
-        for &range in iterator {
-            if range.start <= current_range.end + 1 {
-                current_range.end = current_range.end.max(range.end);
-            } else {
-                merged_ranges.push(current_range);
-                current_range = range;
-            }
-        }
-        merged_ranges.push(current_range);
-
-        let total_covered: u64 = merged_ranges.iter().map(|r| r.end - r.start + 1).sum();
-        
-        format!(
-            "After merging, there are {} ranges covering a total of {} numbers.",
-            merged_ranges.len(),
-            total_covered
-        )
-    }
 }
 
 #[cfg(test)]
