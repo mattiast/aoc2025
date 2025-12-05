@@ -14,6 +14,12 @@ pub struct Range {
     pub end: u64,
 }
 
+impl Range {
+    pub fn contains(&self, number: u64) -> bool {
+        number >= self.start && number <= self.end
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Input {
     pub ranges: Vec<Range>,
@@ -49,10 +55,18 @@ impl Solution for Day05 {
             .or_else(|_| parse_input(input))
             .expect("Failed to parse input");
 
+        let mut num_fresh = 0;
+        for &number in &data.numbers {
+            if data.ranges.iter().any(|range| range.contains(number)) {
+                num_fresh += 1;
+            }
+        }
+
         format!(
-            "Parsed {} ranges and {} numbers",
+            "Parsed {} ranges and {} numbers, {} numbers are within at least one range.",
             data.ranges.len(),
-            data.numbers.len()
+            data.numbers.len(),
+            num_fresh
         )
     }
 
@@ -68,6 +82,7 @@ impl Solution for Day05 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use regex::Regex;
 
     const SAMPLE_INPUT: &str = "3-5
 10-14
@@ -123,7 +138,7 @@ mod tests {
     #[test]
     fn test_part1_sample() {
         let output = Day05.part1(SAMPLE_INPUT);
-        assert!(output.contains("4 ranges"));
-        assert!(output.contains("6 numbers"));
+        let re = Regex::new(r"\<3\>").unwrap();
+        assert!(re.is_match(&output), "Output did not match expected pattern: {}", output);
     }
 }
