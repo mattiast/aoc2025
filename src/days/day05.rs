@@ -51,9 +51,7 @@ fn parse_input_complete(input: &str) -> IResult<&str, Input> {
 
 impl Solution for Day05 {
     fn part1(&self, input: &str) -> String {
-        let (_, data) = parse_input_complete(input)
-            .or_else(|_| parse_input(input))
-            .expect("Failed to parse input");
+        let (_, data) = parse_input_complete(input).expect("Failed to parse input");
 
         let mut num_fresh = 0;
         for &number in &data.numbers {
@@ -71,11 +69,33 @@ impl Solution for Day05 {
     }
 
     fn part2(&self, input: &str) -> String {
-        let (_, _data) = parse_input_complete(input)
-            .or_else(|_| parse_input(input))
-            .expect("Failed to parse input");
+        let (_, mut data) = parse_input_complete(input).expect("Failed to parse input");
+        data.ranges.sort_by_key(|r| r.start);
 
-        "Part 2 TODO".to_string()
+        let mut iterator = data.ranges.iter();
+
+        let mut current_range = match iterator.next() {
+            Some(r) => *r,
+            None => return "No ranges provided.".to_string(),
+        };
+        let mut merged_ranges = Vec::new();
+        for &range in iterator {
+            if range.start <= current_range.end + 1 {
+                current_range.end = current_range.end.max(range.end);
+            } else {
+                merged_ranges.push(current_range);
+                current_range = range;
+            }
+        }
+        merged_ranges.push(current_range);
+
+        let total_covered: u64 = merged_ranges.iter().map(|r| r.end - r.start + 1).sum();
+        
+        format!(
+            "After merging, there are {} ranges covering a total of {} numbers.",
+            merged_ranges.len(),
+            total_covered
+        )
     }
 }
 
@@ -139,6 +159,21 @@ mod tests {
     fn test_part1_sample() {
         let output = Day05.part1(SAMPLE_INPUT);
         let re = Regex::new(r"\<3\>").unwrap();
-        assert!(re.is_match(&output), "Output did not match expected pattern: {}", output);
+        assert!(
+            re.is_match(&output),
+            "Output did not match expected pattern: {}",
+            output
+        );
+    }
+
+    #[test]
+    fn test_part2_sample() {
+        let output = Day05.part2(SAMPLE_INPUT);
+        let re = Regex::new(r"\<14\>").unwrap();
+        assert!(
+            re.is_match(&output),
+            "Output did not match expected pattern: {}",
+            output
+        );
     }
 }
