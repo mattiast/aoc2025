@@ -1,11 +1,4 @@
 use crate::Solution;
-use nom::{
-    IResult, Parser,
-    character::complete::{digit1, one_of, space0, space1},
-    combinator::map_res,
-    multi::separated_list1,
-    sequence::preceded,
-};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Operator {
@@ -28,7 +21,9 @@ pub struct Day06;
 
 impl Solution for Day06 {
     fn part1(&self, input: &str) -> String {
-        let parsed = parse_input(input).expect("Failed to parse input").1;
+        let parsed = parsing1::parse_input(input)
+            .expect("Failed to parse input")
+            .1;
 
         let mut sum = 0u64;
         for column in &parsed.columns {
@@ -40,7 +35,11 @@ impl Solution for Day06 {
         }
 
         // For now, just show what we parsed
-        format!("Parsed {} columns, grand total {}", parsed.columns.len(), sum)
+        format!(
+            "Parsed {} columns, grand total {}",
+            parsed.columns.len(),
+            sum
+        )
     }
 
     fn part2(&self, _input: &str) -> String {
@@ -48,59 +47,69 @@ impl Solution for Day06 {
     }
 }
 
-fn parse_number(input: &str) -> IResult<&str, u64> {
-    map_res(digit1, |s: &str| s.parse::<u64>()).parse(input)
-}
-
-fn parse_number_row(input: &str) -> IResult<&str, Vec<u64>> {
-    separated_list1(space1, preceded(space0, parse_number)).parse(input)
-}
-
-fn parse_operator(input: &str) -> IResult<&str, Operator> {
-    let (input, op) = preceded(space0, one_of("*+")).parse(input)?;
-    let operator = match op {
-        '*' => Operator::Multiply,
-        '+' => Operator::Add,
-        _ => unreachable!(),
+mod parsing1 {
+    use super::{Column, Input, Operator};
+    use nom::{
+        IResult, Parser,
+        character::complete::{digit1, one_of, space0, space1},
+        combinator::map_res,
+        multi::separated_list1,
+        sequence::preceded,
     };
-    Ok((input, operator))
-}
-
-fn parse_operator_row(input: &str) -> IResult<&str, Vec<Operator>> {
-    separated_list1(space1, parse_operator).parse(input)
-}
-
-pub fn parse_input(input: &str) -> IResult<&str, Input> {
-    let lines: Vec<&str> = input.lines().filter(|l| !l.trim().is_empty()).collect();
-
-    // Parse all number rows except the last line
-    let mut all_rows: Vec<Vec<u64>> = Vec::new();
-    for i in 0..lines.len() - 1 {
-        let (_, row) = parse_number_row(lines[i])?;
-        all_rows.push(row);
+    fn parse_number(input: &str) -> IResult<&str, u64> {
+        map_res(digit1, |s: &str| s.parse::<u64>()).parse(input)
     }
 
-    // Parse operator row (last line)
-    let (input, operators) = parse_operator_row(lines[lines.len() - 1])?;
+    fn parse_number_row(input: &str) -> IResult<&str, Vec<u64>> {
+        separated_list1(space1, preceded(space0, parse_number)).parse(input)
+    }
 
-    // Group numbers by column
-    let num_cols = operators.len();
-    let mut columns = Vec::new();
+    fn parse_operator(input: &str) -> IResult<&str, Operator> {
+        let (input, op) = preceded(space0, one_of("*+")).parse(input)?;
+        let operator = match op {
+            '*' => Operator::Multiply,
+            '+' => Operator::Add,
+            _ => unreachable!(),
+        };
+        Ok((input, operator))
+    }
 
-    for col_idx in 0..num_cols {
-        let mut numbers = Vec::new();
-        for row in &all_rows {
-            if let Some(&num) = row.get(col_idx) {
-                numbers.push(num);
-            }
+    fn parse_operator_row(input: &str) -> IResult<&str, Vec<Operator>> {
+        separated_list1(space1, parse_operator).parse(input)
+    }
+
+    pub fn parse_input(input: &str) -> IResult<&str, Input> {
+        let lines: Vec<&str> = input.lines().filter(|l| !l.trim().is_empty()).collect();
+
+        // Parse all number rows except the last line
+        let mut all_rows: Vec<Vec<u64>> = Vec::new();
+        for i in 0..lines.len() - 1 {
+            let (_, row) = parse_number_row(lines[i])?;
+            all_rows.push(row);
         }
-        columns.push(Column {
-            numbers,
-            operator: operators[col_idx],
-        });
-    }
 
-    Ok((input, Input { columns }))
+        // Parse operator row (last line)
+        let (input, operators) = parse_operator_row(lines[lines.len() - 1])?;
+
+        // Group numbers by column
+        let num_cols = operators.len();
+        let mut columns = Vec::new();
+
+        for col_idx in 0..num_cols {
+            let mut numbers = Vec::new();
+            for row in &all_rows {
+                if let Some(&num) = row.get(col_idx) {
+                    numbers.push(num);
+                }
+            }
+            columns.push(Column {
+                numbers,
+                operator: operators[col_idx],
+            });
+        }
+
+        Ok((input, Input { columns }))
+    }
 }
 
 #[cfg(test)]
@@ -113,7 +122,9 @@ mod tests {
 
     #[test]
     fn test_parse_sample() {
-        let parsed = parse_input(INPUT).expect("Failed to parse input").1;
+        let parsed = parsing1::parse_input(INPUT)
+            .expect("Failed to parse input")
+            .1;
 
         assert_eq!(parsed.columns.len(), 4);
 
