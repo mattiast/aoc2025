@@ -34,7 +34,6 @@ impl Solution for Day06 {
             sum += result;
         }
 
-        // For now, just show what we parsed
         format!(
             "Parsed {} columns, grand total {}",
             parsed.columns.len(),
@@ -43,7 +42,22 @@ impl Solution for Day06 {
     }
 
     fn part2(&self, _input: &str) -> String {
-        "Part 2 TODO".to_string()
+        let parsed = parsing2::parse_input(_input).expect("Failed to parse input");
+
+        let mut sum = 0u64;
+        for column in &parsed.columns {
+            let result = match column.operator {
+                Operator::Add => column.numbers.iter().sum::<u64>(),
+                Operator::Multiply => column.numbers.iter().product::<u64>(),
+            };
+            sum += result;
+        }
+
+        format!(
+            "Parsed {} columns, grand total {}",
+            parsed.columns.len(),
+            sum
+        )
     }
 }
 
@@ -219,19 +233,15 @@ mod tests {
 
         assert_eq!(parsed.columns.len(), 4);
 
-        // Column 0: [123, 45, 6] with *
         assert_eq!(parsed.columns[0].numbers, vec![123, 45, 6]);
         assert_eq!(parsed.columns[0].operator, Operator::Multiply);
 
-        // Column 1: [328, 64, 98] with +
         assert_eq!(parsed.columns[1].numbers, vec![328, 64, 98]);
         assert_eq!(parsed.columns[1].operator, Operator::Add);
 
-        // Column 2: [51, 387, 215] with *
         assert_eq!(parsed.columns[2].numbers, vec![51, 387, 215]);
         assert_eq!(parsed.columns[2].operator, Operator::Multiply);
 
-        // Column 3: [64, 23, 314] with +
         assert_eq!(parsed.columns[3].numbers, vec![64, 23, 314]);
         assert_eq!(parsed.columns[3].operator, Operator::Add);
     }
@@ -241,5 +251,12 @@ mod tests {
         let solution = Day06;
         let result = solution.part1(INPUT);
         assert!(result.contains("4277556"));
+    }
+
+    #[test]
+    fn test_part2() {
+        let solution = Day06;
+        let result = solution.part2(INPUT);
+        assert!(result.contains("3263827"));
     }
 }
