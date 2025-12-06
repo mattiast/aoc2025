@@ -6,7 +6,7 @@ pub enum Operator {
     Multiply,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Column {
     pub numbers: Vec<u64>,
     pub operator: Operator,
@@ -112,6 +112,68 @@ mod parsing1 {
     }
 }
 
+mod parsing2 {
+    use super::*;
+    type Lines<'input, 'list> = &'list [&'input str];
+    pub fn parse_number(input: Lines, col: usize) -> Option<u64> {
+        let digits = input[..input.len() - 1]
+            .iter()
+            .filter_map(|line| {
+                if col >= line.len() {
+                    return None;
+                }
+                let c = line[col..].chars().next()?;
+                if c.is_digit(10) { Some(c) } else { None }
+            })
+            .collect::<Vec<char>>();
+        let s: String = digits.into_iter().collect();
+        if s.is_empty() {
+            None
+        } else {
+            s.parse::<u64>().ok()
+        }
+    }
+    pub fn parse_operator(input: Lines, col: usize) -> Option<Operator> {
+        let line = input.last()?;
+        if col >= line.len() {
+            return None;
+        }
+        let c = line[col..].chars().next()?;
+        match c {
+            '*' => Some(Operator::Multiply),
+            '+' => Some(Operator::Add),
+            _ => None,
+        }
+    }
+    pub fn parse_column(input: Lines, mut col: usize) -> Option<(usize, Column)> {
+        let operator = parse_operator(input, col)?;
+        let mut numbers = Vec::new();
+        loop {
+            let res = parse_number(input, col);
+            col += 1;
+            match res {
+                Some(num) => numbers.push(num),
+                None => break,
+            }
+        }
+        Some((col, Column { numbers, operator }))
+    }
+    pub fn parse_input(input: &str) -> Option<Input> {
+        let lines: Vec<&str> = input.lines().collect();
+        let line_len = lines.first()?.len();
+        let mut columns = Vec::new();
+        let mut col = 0;
+        while let Some((next_col, column)) = parse_column(&lines, col) {
+            columns.push(column);
+            col = next_col;
+            if col >= line_len {
+                break;
+            }
+        }
+        Some(Input { columns })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -119,9 +181,38 @@ mod tests {
  45 64  387 23 
   6 98  215 314
 *   +   *   +  ";
+    #[test]
+    fn test_parse2_sample() {
+        let lines: Vec<&str> = INPUT.lines().collect();
+
+        assert_eq!(parsing2::parse_number(&lines, 0), Some(1));
+        assert_eq!(parsing2::parse_number(&lines, 1), Some(24));
+        assert_eq!(parsing2::parse_number(&lines, 2), Some(356));
+        assert_eq!(parsing2::parse_number(&lines, 3), None);
+
+        assert_eq!(
+            parsing2::parse_operator(&lines, 0),
+            Some(Operator::Multiply)
+        );
+        assert_eq!(
+            parsing2::parse_column(&lines, 0),
+            Some((
+                4,
+                Column {
+                    numbers: vec![1, 24, 356],
+                    operator: Operator::Multiply,
+                }
+            ))
+        );
+
+        let parsed = parsing2::parse_input(INPUT).expect("Failed to parse input");
+        assert_eq!(parsed.columns.len(), 4);
+        assert_eq!(parsed.columns[2].numbers, vec![32, 581, 175]);
+        assert_eq!(parsed.columns[2].operator, Operator::Multiply);
+    }
 
     #[test]
-    fn test_parse_sample() {
+    fn test_parse1_sample() {
         let parsed = parsing1::parse_input(INPUT)
             .expect("Failed to parse input")
             .1;
