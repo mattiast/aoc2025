@@ -30,8 +30,17 @@ impl Solution for Day06 {
     fn part1(&self, input: &str) -> String {
         let parsed = parse_input(input).expect("Failed to parse input").1;
 
+        let mut sum = 0u64;
+        for column in &parsed.columns {
+            let result = match column.operator {
+                Operator::Add => column.numbers.iter().sum::<u64>(),
+                Operator::Multiply => column.numbers.iter().product::<u64>(),
+            };
+            sum += result;
+        }
+
         // For now, just show what we parsed
-        format!("Parsed {} columns", parsed.columns.len())
+        format!("Parsed {} columns, grand total {}", parsed.columns.len(), sum)
     }
 
     fn part2(&self, _input: &str) -> String {
