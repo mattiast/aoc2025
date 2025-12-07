@@ -1,5 +1,5 @@
 use crate::Solution;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Point {
@@ -79,8 +79,34 @@ impl Solution for Day07 {
         )
     }
 
-    fn part2(&self, _input: &str) -> String {
-        "Part 2 TODO".to_string()
+    fn part2(&self, input: &str) -> String {
+        let grid = parse_input(input);
+
+        let mut row = grid.start.row;
+        let mut colset: HashMap<usize, u64> = [(grid.start.col, 1)].iter().cloned().collect();
+
+        while row < grid.height - 1 {
+            row += 1;
+            let mut new_colset = HashMap::new();
+            for (&col, &n) in &colset {
+                if grid.splitters.contains(&Point { row, col }) {
+                    *new_colset.entry(col - 1).or_insert(0) += n;
+                    *new_colset.entry(col + 1).or_insert(0) += n;
+                } else {
+                    *new_colset.entry(col).or_insert(0) += n;
+                }
+            }
+            colset = new_colset;
+        }
+
+        format!(
+            "Grid size: {}x{}, Start: ({}, {}), Timelines: {}",
+            grid.width,
+            grid.height,
+            grid.start.row,
+            grid.start.col,
+            colset.values().sum::<u64>(),
+        )
     }
 }
 
@@ -125,5 +151,12 @@ mod tests {
         let solution = Day07;
         let result = solution.part1(TEST_INPUT);
         assert!(result.contains("Splittings: 21"));
+    }
+
+    #[test]
+    fn test_part2() {
+        let solution = Day07;
+        let result = solution.part2(TEST_INPUT);
+        assert!(result.contains("Timelines: 40"));
     }
 }
