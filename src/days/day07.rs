@@ -46,8 +46,37 @@ fn parse_input(input: &str) -> Grid {
 pub struct Day07;
 
 impl Solution for Day07 {
-    fn part1(&self, _input: &str) -> String {
-        "Part 1 TODO".to_string()
+    fn part1(&self, input: &str) -> String {
+        let grid = parse_input(input);
+
+        let mut row = grid.start.row;
+        let mut colset: HashSet<usize> = [grid.start.col].iter().cloned().collect();
+
+        let mut num_splittings = 0;
+        while row < grid.height - 1 {
+            row += 1;
+            let mut new_colset = HashSet::new();
+            for &col in &colset {
+                if grid.splitters.contains(&Point { row, col }) {
+                    num_splittings += 1;
+                    new_colset.insert(col - 1);
+                    new_colset.insert(col + 1);
+                } else {
+                    new_colset.insert(col);
+                }
+            }
+            colset = new_colset;
+        }
+
+        format!(
+            "Grid size: {}x{}, Start: ({}, {}), Splitters: {} => Splittings: {}",
+            grid.width,
+            grid.height,
+            grid.start.row,
+            grid.start.col,
+            grid.splitters.len(),
+            num_splittings
+        )
     }
 
     fn part2(&self, _input: &str) -> String {
@@ -55,7 +84,11 @@ impl Solution for Day07 {
     }
 }
 
-const TEST_INPUT: &str = r#".......S.......
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const TEST_INPUT: &str = r#".......S.......
 ...............
 .......^.......
 ...............
@@ -72,11 +105,6 @@ const TEST_INPUT: &str = r#".......S.......
 .^.^.^.^.^...^.
 ...............
 "#;
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
     #[test]
     fn test_parse_input() {
         let grid = parse_input(TEST_INPUT);
@@ -90,5 +118,12 @@ mod tests {
         assert!(grid.splitters.contains(&Point { row: 2, col: 7 }));
         assert!(grid.splitters.contains(&Point { row: 4, col: 6 }));
         assert!(grid.splitters.contains(&Point { row: 4, col: 8 }));
+    }
+
+    #[test]
+    fn test_part1() {
+        let solution = Day07;
+        let result = solution.part1(TEST_INPUT);
+        assert!(result.contains("Splittings: 21"));
     }
 }
