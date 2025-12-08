@@ -48,7 +48,7 @@ impl Solution for Day08 {
         }
         dists.sort_unstable_by_key(|&(dist2, _, _)| dist2);
 
-        for (dist2, i, j) in &dists[..1000] {
+        for (_, i, j) in &dists[..1000] {
             uf.union(*i, *j);
         }
 
@@ -56,12 +56,36 @@ impl Solution for Day08 {
         component_sizes.sort_unstable_by_key(|&size| std::cmp::Reverse(size));
         let prod = component_sizes.iter().take(3).product::<usize>();
 
-        format!("{:?}, product top 3 {}", &component_sizes[..10], prod)
-        
+        format!("{:?}, product top 3 {}", &component_sizes, prod)
     }
 
-    fn part2(&self, _input: &str) -> String {
-        "Part 2 TODO".to_string()
+    fn part2(&self, input: &str) -> String {
+        let (_, points) = parse_points(input).unwrap();
+        let n = points.len();
+        let mut uf = UnionFind::new(n);
+
+        let mut dists = Vec::with_capacity(n * (n - 1) / 2);
+        for i in 0..n {
+            for j in (i + 1)..n {
+                let dist2 = points[i].dist2(&points[j]);
+                dists.push((dist2, i, j));
+            }
+        }
+        dists.sort_unstable_by_key(|&(dist2, _, _)| dist2);
+
+        for (_, i, j) in &dists {
+            uf.union(*i, *j);
+            if uf.connected_component_sizes().len() == 1 {
+                let p1 = points[*i];
+                let p2 = points[*j];
+                let xprod = p1.x * p2.x;
+                return format!(
+                    "All points connected by connecting {:?} and {:?}, x prod {}",
+                    p1, p2, xprod
+                );
+            }
+        }
+        format!("Could not connect all points")
     }
 }
 
