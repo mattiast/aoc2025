@@ -73,9 +73,14 @@ impl Solution for Day08 {
         }
         dists.sort_unstable_by_key(|&(dist2, _, _)| dist2);
 
+        let mut components = n;
         for (_, i, j) in &dists {
-            uf.union(*i, *j);
-            if uf.connected_component_sizes().len() == 1 {
+            let components_reduced = uf.union(*i, *j);
+            if components_reduced {
+                // This could of course be part of the UnionFind struct
+                components -= 1;
+            }
+            if components == 1 {
                 let p1 = points[*i];
                 let p2 = points[*j];
                 let xprod = p1.x * p2.x;
@@ -109,7 +114,9 @@ impl UnionFind {
         self.parent[x]
     }
 
-    fn union(&mut self, x: usize, y: usize) {
+    /// Unites the sets that contain x and y.
+    /// Returns true if a union was performed, false if x and y were already in the same set.
+    fn union(&mut self, x: usize, y: usize) -> bool {
         let root_x = self.find(x);
         let root_y = self.find(y);
         if root_x != root_y {
@@ -120,6 +127,9 @@ impl UnionFind {
                 self.parent[root_y] = root_x;
                 self.size[root_x] += self.size[root_y];
             }
+            true
+        } else {
+            false
         }
     }
 
