@@ -1,16 +1,16 @@
 use crate::Solution;
+use good_lp::{
+    self, Solution as LpSolution, SolverModel, constraint, default_solver, variable, variables,
+};
 
 fn group_to_bitmask(group: &Vec<usize>) -> u16 {
     group.iter().fold(0, |acc, &n| acc | (1 << n))
 }
 fn pattern_to_bitmask(pattern: &Vec<bool>) -> u16 {
-    pattern.iter().enumerate().fold(0, |acc, (i, &b)| {
-        if b {
-            acc | (1 << i)
-        } else {
-            acc
-        }
-    })
+    pattern
+        .iter()
+        .enumerate()
+        .fold(0, |acc, (i, &b)| if b { acc | (1 << i) } else { acc })
 }
 
 #[derive(Debug, Clone)]
@@ -40,6 +40,45 @@ fn min_repr_pattern(pattern: u16, group: &Vec<u16>) -> u16 {
 
 pub struct Day10;
 
+/// Solve for minimum number of groups needed to reach joltage requirements.
+///
+/// Variables: x[i] = number of times we use group[i] (non-negative integers)
+/// Constraints: For each joltage index j:
+///   sum(x[i] for i where j ∈ group[i]) == required_joltage[j]
+/// Objective: minimize sum(x[i])
+fn solve_device_milp(device: &Device) -> Result<u32, Box<dyn std::error::Error>> {
+    let mut vars = variables!();
+
+    // Create a variable for each group (how many times we use it)
+    let group_vars: Vec<_> = (0..device.groups.len())
+        .map(|_| vars.add(variable().integer().min(0)))
+        .collect();
+
+    // Objective: minimize total number of groups used (sum of all variables)
+    let objective: good_lp::Expression = group_vars.iter().sum();
+
+    let mut problem = vars.minimise(objective).using(default_solver);
+
+    // For each joltage requirement, add an equality constraint
+    for (joltage_idx, &required) in device.joltages.iter().enumerate() {
+        // Build expression: sum of group_var[i] for all groups containing this joltage_idx
+        let mut expr: good_lp::Expression = 0.into();
+        for (group_idx, group) in device.groups.iter().enumerate() {
+            if group.contains(&joltage_idx) {
+                expr = expr + group_vars[group_idx];
+            }
+        }
+        // Constraint: the sum must equal the required joltage
+        problem = problem.with(constraint!(expr == required as i32));
+    }
+
+    let solution = problem.solve()?;
+
+    // Return the total number of groups used (sum all variable values)
+    let total: f64 = group_vars.iter().map(|&v| solution.value(v)).sum();
+    Ok(total.round() as u32)
+}
+
 impl Solution for Day10 {
     fn part1(&self, input: &str) -> String {
         let devices = parse_input(input);
@@ -49,11 +88,28 @@ impl Solution for Day10 {
             let min_size = min_repr_pattern(pattern_to_bitmask(&device.pattern), &g);
             total += min_size as u32;
         }
-        format!("Parsed {} devices, total min size: {}", devices.len(), total)
+        format!(
+            "Parsed {} devices, total min size: {}",
+            devices.len(),
+            total
+        )
     }
 
-    fn part2(&self, _input: &str) -> String {
-        "Part 2 TODO".to_string()
+    fn part2(&self, input: &str) -> String {
+        let devices = parse_input(input);
+        let mut total = 0;
+        for (i, device) in devices.iter().enumerate() {
+            if let Ok(min_joltage) = solve_device_milp(device) {
+                total += min_joltage;
+            } else {
+                println!("Failed to solve device {}", i);
+            }
+        }
+        format!(
+            "Parsed {} devices, total min groups: {}",
+            devices.len(),
+            total
+        )
     }
 }
 
@@ -168,5 +224,29 @@ mod tests {
         let result = day10.part1(SAMPLE_INPUT);
         // Just verify it runs without panicking
         assert_eq!(result, "Parsed 3 devices, total min size: 7");
+    }
+
+    #[test]
+    fn test_milp_solver_simple() {
+        // Simple test: groups that can reach required joltages
+        // Groups: (0) adds to index 0, (1) adds to index 1, (0,1) adds to both
+        // Required: joltage[0] = 2, joltage[1] = 3
+        // Solution: use group 0 twice (gives [2,0]), group 1 three times (gives [2,3])
+        let device = Device {
+            pattern: vec![false, false], // not used in part2
+            groups: vec![vec![0], vec![1], vec![0, 1]],
+            joltages: vec![2, 3],
+        };
+
+        let result = solve_device_milp(&device);
+        assert_eq!(result.unwrap(), 3);
+    }
+
+    #[test]
+    fn test_part2_sample() {
+        let day10 = Day10;
+        let result = day10.part2(SAMPLE_INPUT);
+        // Just verify it runs without panicking
+        assert_eq!(result, "Parsed 3 devices, total min groups: 33");
     }
 }
