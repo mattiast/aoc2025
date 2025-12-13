@@ -13,34 +13,42 @@ struct Args {
     #[arg(help = "Part number (1 or 2)")]
     part: u8,
 
-    #[arg(short, long, help = "Path to input file (defaults to inputs/dayXX.txt)")]
+    #[arg(
+        short,
+        long,
+        help = "Path to input file (defaults to inputs/dayXX.txt)"
+    )]
     input: Option<PathBuf>,
+}
+
+enum Part {
+    One,
+    Two,
 }
 
 fn main() {
     let args = Args::parse();
 
-    if args.day < 1 || args.day > 25 {
-        eprintln!("Error: Day must be between 1 and 25");
-        std::process::exit(1);
-    }
-
-    if args.part != 1 && args.part != 2 {
-        eprintln!("Error: Part must be 1 or 2");
-        std::process::exit(1);
-    }
-
-    let solution = match days::get_solution(args.day) {
-        Some(s) => s,
-        None => {
-            eprintln!("Error: Day {} is not yet implemented", args.day);
+    let part = match args.part {
+        1 => Part::One,
+        2 => Part::Two,
+        _ => {
+            eprintln!("Error: Part must be 1 or 2");
             std::process::exit(1);
         }
     };
 
-    let input_path = args.input.unwrap_or_else(|| {
-        PathBuf::from(format!("inputs/day{:02}.txt", args.day))
-    });
+    let solution = match days::get_solution(args.day) {
+        Some(s) => s,
+        None => {
+            eprintln!("Error: Day {} is not implemented", args.day);
+            std::process::exit(1);
+        }
+    };
+
+    let input_path = args
+        .input
+        .unwrap_or_else(|| PathBuf::from(format!("inputs/day{:02}.txt", args.day)));
 
     let input = match fs::read_to_string(&input_path) {
         Ok(content) => content,
@@ -50,10 +58,9 @@ fn main() {
         }
     };
 
-    let result = match args.part {
-        1 => solution.part1(&input),
-        2 => solution.part2(&input),
-        _ => unreachable!(),
+    let result = match part {
+        Part::One => solution.part1(&input),
+        Part::Two => solution.part2(&input),
     };
 
     println!("{}", result);
