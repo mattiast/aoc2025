@@ -11,7 +11,6 @@ pub struct Day12;
 
 #[derive(Debug, Clone)]
 struct Figure {
-    id: u8,
     pattern: [[bool; 3]; 3], // true = '#', false = '.'
 }
 
@@ -39,7 +38,7 @@ fn parse_pattern_line(input: &str) -> IResult<&str, [bool; 3]> {
 
 // Parse a complete 3x3 figure
 fn parse_figure(input: &str) -> IResult<&str, Figure> {
-    let (input, id) = nom_u8.parse(input)?;
+    let (input, _id) = nom_u8.parse(input)?;
     let (input, _) = (char(':'), line_ending).parse(input)?;
     let (input, line1) = terminated(parse_pattern_line, line_ending).parse(input)?;
     let (input, line2) = terminated(parse_pattern_line, line_ending).parse(input)?;
@@ -50,7 +49,6 @@ fn parse_figure(input: &str) -> IResult<&str, Figure> {
     Ok((
         input,
         Figure {
-            id,
             pattern: [line1, line2, line3],
         },
     ))
@@ -108,13 +106,67 @@ fn parse_input(input: &str) -> Result<Input, String> {
     Ok(Input { figures, entries })
 }
 
+enum FitOrNot {
+    Fits,
+    DoesNotFit,
+    Inconclusive,
+}
+
+fn decide(entry: &DimensionEntry, figure_sizes: &[u32]) -> FitOrNot {
+    let num_slots = (entry.width / 3) * (entry.height / 3);
+    let num_figures = entry.numbers.iter().sum::<u32>();
+    if num_figures <= num_slots {
+        return FitOrNot::Fits;
+    }
+
+    let total_area = entry
+        .numbers
+        .iter()
+        .zip(figure_sizes.iter())
+        .map(|(&count, &size)| count * size)
+        .sum::<u32>();
+    if total_area > entry.width * entry.height {
+        FitOrNot::DoesNotFit
+    } else {
+        FitOrNot::Inconclusive
+    }
+}
+
 impl Solution for Day12 {
     fn part1(&self, input: &str) -> String {
         let parsed = parse_input(input).unwrap();
+        let figure_sizes = {
+            let mut sizes = Vec::new();
+            for fig in &parsed.figures {
+                let mut count = 0u32;
+                for row in &fig.pattern {
+                    for &cell in row {
+                        if cell {
+                            count += 1;
+                        }
+                    }
+                }
+                sizes.push(count);
+            }
+            sizes
+        };
+        let mut num_fits = 0;
+        for entry in &parsed.entries {
+            match decide(entry, &figure_sizes) {
+                FitOrNot::Fits => {
+                    num_fits += 1;
+                }
+                FitOrNot::DoesNotFit => {}
+                FitOrNot::Inconclusive => {
+                    return "Inconclusive entry found".to_string();
+                }
+            }
+        }
         format!(
-            "Parsed {} figures and {} entries",
+            "Parsed {} figures and {} entries, {} entries fit the figures.",
             parsed.figures.len(),
-            parsed.entries.len()
+            parsed.entries.len(),
+            num_fits
         )
     }
 
@@ -133,7 +185,6 @@ mod tests {
         let result = parse_figure(input);
         assert!(result.is_ok());
         let (_, figure) = result.unwrap();
-        assert_eq!(figure.id, 0);
         assert_eq!(figure.pattern[0], [true, true, true]);
         assert_eq!(figure.pattern[1], [true, false, true]);
         assert_eq!(figure.pattern[2], [true, false, true]);
