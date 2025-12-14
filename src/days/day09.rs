@@ -249,16 +249,19 @@ fn solve_part2(tiles: &[Tile]) -> i64 {
 pub struct Day09;
 
 impl Solution for Day09 {
-    fn part1(&self, input: &str) -> String {
+    fn part1(&self, input: &str) -> anyhow::Result<String> {
         let tiles = parse_input(input);
         let max_area = solve_part1(&tiles);
-        format!("Maximum rectangle area: {}", max_area)
+        Ok(format!("Maximum rectangle area: {}", max_area))
     }
 
-    fn part2(&self, input: &str) -> String {
+    fn part2(&self, input: &str) -> anyhow::Result<String> {
         let tiles = parse_input(input);
         let max_area = solve_part2(&tiles);
-        format!("Maximum non-intersecting rectangle area: {}", max_area)
+        Ok(format!(
+            "Maximum non-intersecting rectangle area: {}",
+            max_area
+        ))
     }
 }
 

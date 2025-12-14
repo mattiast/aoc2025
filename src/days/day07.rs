@@ -46,7 +46,7 @@ fn parse_input(input: &str) -> Grid {
 pub struct Day07;
 
 impl Solution for Day07 {
-    fn part1(&self, input: &str) -> String {
+    fn part1(&self, input: &str) -> anyhow::Result<String> {
         let grid = parse_input(input);
 
         let mut row = grid.start.row;
@@ -68,7 +68,7 @@ impl Solution for Day07 {
             colset = new_colset;
         }
 
-        format!(
+        Ok(format!(
             "Grid size: {}x{}, Start: ({}, {}), Splitters: {} => Splittings: {}",
             grid.width,
             grid.height,
@@ -76,10 +76,10 @@ impl Solution for Day07 {
             grid.start.col,
             grid.splitters.len(),
             num_splittings
-        )
+        ))
     }
 
-    fn part2(&self, input: &str) -> String {
+    fn part2(&self, input: &str) -> anyhow::Result<String> {
         let grid = parse_input(input);
 
         let mut row = grid.start.row;
@@ -99,14 +99,14 @@ impl Solution for Day07 {
             colset = new_colset;
         }
 
-        format!(
+        Ok(format!(
             "Grid size: {}x{}, Start: ({}, {}), Timelines: {}",
             grid.width,
             grid.height,
             grid.start.row,
             grid.start.col,
             colset.values().sum::<u64>(),
-        )
+        ))
     }
 }
 

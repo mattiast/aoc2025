@@ -34,7 +34,7 @@ fn parse_points(input: &str) -> IResult<&str, Vec<Point3D>> {
 pub struct Day08;
 
 impl Solution for Day08 {
-    fn part1(&self, input: &str) -> String {
+    fn part1(&self, input: &str) -> anyhow::Result<String> {
         let (_, points) = parse_points(input).unwrap();
         let n = points.len();
         let mut uf = UnionFind::new(n);
@@ -56,10 +56,10 @@ impl Solution for Day08 {
         component_sizes.sort_unstable_by_key(|&size| std::cmp::Reverse(size));
         let prod = component_sizes.iter().take(3).product::<usize>();
 
-        format!("{:?}, product top 3 {}", &component_sizes, prod)
+        Ok(format!("{:?}, product top 3 {}", &component_sizes, prod))
     }
 
-    fn part2(&self, input: &str) -> String {
+    fn part2(&self, input: &str) -> anyhow::Result<String> {
         let (_, points) = parse_points(input).unwrap();
         let n = points.len();
         let mut uf = UnionFind::new(n);
@@ -84,13 +84,13 @@ impl Solution for Day08 {
                 let p1 = points[*i];
                 let p2 = points[*j];
                 let xprod = p1.x * p2.x;
-                return format!(
+                return Ok(format!(
                     "All points connected by connecting {:?} and {:?}, x prod {}",
                     p1, p2, xprod
-                );
+                ));
             }
         }
-        format!("Could not connect all points")
+        Ok(format!("Could not connect all points"))
     }
 }
 

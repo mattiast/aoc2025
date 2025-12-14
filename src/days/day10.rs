@@ -80,7 +80,7 @@ fn solve_device_milp(device: &Device) -> Result<u32, Box<dyn std::error::Error>>
 }
 
 impl Solution for Day10 {
-    fn part1(&self, input: &str) -> String {
+    fn part1(&self, input: &str) -> anyhow::Result<String> {
         let devices = parse_input(input);
         let mut total = 0;
         for device in &devices {
@@ -88,14 +88,14 @@ impl Solution for Day10 {
             let min_size = min_repr_pattern(pattern_to_bitmask(&device.pattern), &g);
             total += min_size as u32;
         }
-        format!(
+        Ok(format!(
             "Parsed {} devices, total min size: {}",
             devices.len(),
             total
-        )
+        ))
     }
 
-    fn part2(&self, input: &str) -> String {
+    fn part2(&self, input: &str) -> anyhow::Result<String> {
         let devices = parse_input(input);
         let mut total = 0;
         for (i, device) in devices.iter().enumerate() {
@@ -105,11 +105,11 @@ impl Solution for Day10 {
                 println!("Failed to solve device {}", i);
             }
         }
-        format!(
+        Ok(format!(
             "Parsed {} devices, total min groups: {}",
             devices.len(),
             total
-        )
+        ))
     }
 }
 

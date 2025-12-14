@@ -26,21 +26,21 @@ fn parse_input(input: &str) -> IResult<&str, Vec<Range>> {
 }
 
 impl Solution for Day02 {
-    fn part1(&self, input: &str) -> String {
+    fn part1(&self, input: &str) -> anyhow::Result<String> {
         let (_, lines) = parse_input(input).expect("Failed to parse input");
         let mut set: HashSet<u64> = HashSet::new();
         for range in &lines {
             sum_invalid(range, 2, &mut set);
         }
         let total_sum_invalid: u64 = set.iter().sum();
-        format!(
+        Ok(format!(
             "Parsed {} ranges, sum of invalid: {:?}",
             lines.len(),
             total_sum_invalid
-        )
+        ))
     }
 
-    fn part2(&self, input: &str) -> String {
+    fn part2(&self, input: &str) -> anyhow::Result<String> {
         let lines = parse_input(input).expect("Failed to parse input").1;
         let mut set: HashSet<u64> = HashSet::new();
         for range in &lines {
@@ -49,11 +49,11 @@ impl Solution for Day02 {
             }
         }
         let total_sum_invalid: u64 = set.iter().sum();
-        format!(
+        Ok(format!(
             "Parsed {} ranges, sum of invalid: {:?}",
             lines.len(),
             total_sum_invalid
-        )
+        ))
     }
 }
 fn sum_invalid(range: &Range, k: u32, set: &mut HashSet<u64>) {

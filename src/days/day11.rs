@@ -88,16 +88,19 @@ impl PathSolver {
 
 pub struct Day11;
 impl Solution for Day11 {
-    fn part1(&self, input: &str) -> String {
+    fn part1(&self, input: &str) -> anyhow::Result<String> {
         let (_, connections) = parse_input(input).expect("Failed to parse input");
         let mut solver = PathSolver::new(connections);
 
         let result = solver.num_paths(*b"you", *b"out");
 
-        format!("Number of distinct paths from 'you' to 'out': {}", result)
+        Ok(format!(
+            "Number of distinct paths from 'you' to 'out': {}",
+            result
+        ))
     }
 
-    fn part2(&self, input: &str) -> String {
+    fn part2(&self, input: &str) -> anyhow::Result<String> {
         let (_, connections) = parse_input(input).expect("Failed to parse input");
         let mut solver = PathSolver::new(connections);
 
@@ -109,6 +112,6 @@ impl Solution for Day11 {
         let d2o = solver.num_paths(*b"dac", *b"out");
         let result = y2d * d2f * f2o + y2f * f2d * d2o;
 
-        format!("Paths going through 'dac' and 'fft': {}", result)
+        Ok(format!("Paths going through 'dac' and 'fft': {}", result))
     }
 }

@@ -23,21 +23,21 @@ fn parse_input(input: &str) -> IResult<&str, Grid> {
 }
 
 impl Solution for Day03 {
-    fn part1(&self, input: &str) -> String {
+    fn part1(&self, input: &str) -> anyhow::Result<String> {
         let (_, grid) = parse_input(input).expect("Failed to parse input");
         let mut joltage = 0u64;
         for line in &grid {
             joltage += find_joltage::<2>(line);
         }
-        format!(
+        Ok(format!(
             "Parsed grid: {} rows x {} cols, total joltage {}",
             grid.len(),
             grid[0].len(),
             joltage
-        )
+        ))
     }
 
-    fn part2(&self, input: &str) -> String {
+    fn part2(&self, input: &str) -> anyhow::Result<String> {
         let (_, grid) = parse_input(input).expect("Failed to parse input");
         let mut total_joltage = 0u64;
         let m = grid.len();
@@ -45,10 +45,10 @@ impl Solution for Day03 {
         for line in &grid {
             total_joltage += find_joltage::<12>(line);
         }
-        format!(
+        Ok(format!(
             "Parsed grid: {} rows x {} cols, total joltage {}",
             m, n, total_joltage
-        )
+        ))
     }
 }
 

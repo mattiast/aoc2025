@@ -47,7 +47,7 @@ fn merge_ranges(sorted_ranges: &[Range]) -> Vec<Range> {
 }
 
 impl Solution for Day05 {
-    fn part1(&self, input: &str) -> String {
+    fn part1(&self, input: &str) -> anyhow::Result<String> {
         let (_, mut data) = parse_input_complete(input).expect("Failed to parse input");
         data.ranges.sort_by_key(|r| r.start);
 
@@ -69,26 +69,26 @@ impl Solution for Day05 {
             }
         }
 
-        format!(
+        Ok(format!(
             "Parsed {} ranges and {} numbers, {} numbers are within at least one range.",
             data.ranges.len(),
             data.numbers.len(),
             num_fresh
-        )
+        ))
     }
 
-    fn part2(&self, input: &str) -> String {
+    fn part2(&self, input: &str) -> anyhow::Result<String> {
         let (_, mut data) = parse_input_complete(input).expect("Failed to parse input");
         data.ranges.sort_by_key(|r| r.start);
 
         let merged_ranges = merge_ranges(&data.ranges);
         let total_covered: u64 = merged_ranges.iter().map(|r| r.end - r.start + 1).sum();
 
-        format!(
+        Ok(format!(
             "After merging, there are {} ranges covering a total of {} numbers.",
             merged_ranges.len(),
             total_covered
-        )
+        ))
     }
 }
 

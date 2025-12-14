@@ -53,7 +53,7 @@ fn parse_input(input: &str) -> Vec<Instruction> {
 }
 
 impl Solution for Day01 {
-    fn part1(&self, input: &str) -> String {
+    fn part1(&self, input: &str) -> anyhow::Result<String> {
         let instructions = parse_input(input);
         let mut x = 50;
         let mut zeros = 0;
@@ -67,10 +67,10 @@ impl Solution for Day01 {
                 zeros += 1;
             }
         }
-        format!("Points at 0 {} times", zeros)
+        Ok(format!("Points at 0 {} times", zeros))
     }
 
-    fn part2(&self, input: &str) -> String {
+    fn part2(&self, input: &str) -> anyhow::Result<String> {
         let instructions = parse_input(input);
         let mut x = 50i32;
         let mut zeros = 0;
@@ -101,7 +101,7 @@ impl Solution for Day01 {
             }
             x = x.rem_euclid(100);
         }
-        format!("Pass by 0 {} times", zeros)
+        Ok(format!("Pass by 0 {} times", zeros))
     }
 }
 

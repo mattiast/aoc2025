@@ -133,7 +133,7 @@ fn decide(entry: &DimensionEntry, figure_sizes: &[u32]) -> FitOrNot {
 }
 
 impl Solution for Day12 {
-    fn part1(&self, input: &str) -> String {
+    fn part1(&self, input: &str) -> anyhow::Result<String> {
         let parsed = parse_input(input).unwrap();
         let figure_sizes = {
             let mut sizes = Vec::new();
@@ -158,20 +158,20 @@ impl Solution for Day12 {
                 }
                 FitOrNot::DoesNotFit => {}
                 FitOrNot::Inconclusive => {
-                    return "Inconclusive entry found".to_string();
+                    return Ok("Inconclusive entry found".to_string());
                 }
             }
         }
-        format!(
+        Ok(format!(
             "Parsed {} figures and {} entries, {} entries fit the figures.",
             parsed.figures.len(),
             parsed.entries.len(),
             num_fits
-        )
+        ))
     }
 
-    fn part2(&self, _input: &str) -> String {
-        "Part 2 TODO".to_string()
+    fn part2(&self, _input: &str) -> anyhow::Result<String> {
+        anyhow::bail!("Part 2 TODO")
     }
 }
 

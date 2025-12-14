@@ -20,7 +20,7 @@ pub struct Input {
 pub struct Day06;
 
 impl Solution for Day06 {
-    fn part1(&self, input: &str) -> String {
+    fn part1(&self, input: &str) -> anyhow::Result<String> {
         let parsed = parsing1::parse_input(input)
             .expect("Failed to parse input")
             .1;
@@ -34,14 +34,14 @@ impl Solution for Day06 {
             sum += result;
         }
 
-        format!(
+        Ok(format!(
             "Parsed {} columns, grand total {}",
             parsed.columns.len(),
             sum
-        )
+        ))
     }
 
-    fn part2(&self, _input: &str) -> String {
+    fn part2(&self, _input: &str) -> anyhow::Result<String> {
         let parsed = parsing2::parse_input(_input).expect("Failed to parse input");
 
         let mut sum = 0u64;
@@ -53,11 +53,11 @@ impl Solution for Day06 {
             sum += result;
         }
 
-        format!(
+        Ok(format!(
             "Parsed {} columns, grand total {}",
             parsed.columns.len(),
             sum
-        )
+        ))
     }
 }
 

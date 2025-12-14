@@ -52,8 +52,13 @@ fn main() -> anyhow::Result<()> {
     let result = match part {
         Part::One => solution.part1(&input),
         Part::Two => solution.part2(&input),
-    }?;
+    };
+    match result {
+        Ok(res) => println!("{}", res),
+        Err(e) => {
+            bail!("Error executing solution: {}", e);
+        }
+    };
 
-    println!("{}", result);
     Ok(())
 }

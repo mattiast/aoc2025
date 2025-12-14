@@ -45,7 +45,7 @@ fn parse_input_complete(input: &str) -> IResult<&str, Grid> {
 }
 
 impl Solution for Day04 {
-    fn part1(&self, input: &str) -> String {
+    fn part1(&self, input: &str) -> anyhow::Result<String> {
         let (_, grid) = parse_input_complete(input)
             .or_else(|_| parse_input(input))
             .expect("Failed to parse input");
@@ -55,13 +55,13 @@ impl Solution for Day04 {
 
         let num_reachable_paper_rolls = find_reachable_paper_rolls(&grid).len();
 
-        format!(
+        Ok(format!(
             "Parsed grid: {} rows x {} cols. Reachable: {}",
             rows, cols, num_reachable_paper_rolls
-        )
+        ))
     }
 
-    fn part2(&self, input: &str) -> String {
+    fn part2(&self, input: &str) -> anyhow::Result<String> {
         let (_, mut grid) = parse_input_complete(input)
             .or_else(|_| parse_input(input))
             .expect("Failed to parse input");
@@ -77,7 +77,7 @@ impl Solution for Day04 {
             }
         }
         print_grid(&grid);
-        format!("Removable: {}", num_removed)
+        Ok(format!("Removable: {}", num_removed))
     }
 }
 
