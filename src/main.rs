@@ -1,3 +1,4 @@
+use anyhow::bail;
 use aoc2025::days;
 use clap::Parser;
 use std::fs;
@@ -26,42 +27,33 @@ enum Part {
     Two,
 }
 
-fn main() {
+fn main() -> anyhow::Result<()> {
     let args = Args::parse();
 
     let part = match args.part {
         1 => Part::One,
         2 => Part::Two,
         _ => {
-            eprintln!("Error: Part must be 1 or 2");
-            std::process::exit(1);
+            bail!("Error: Part must be 1 or 2");
         }
     };
 
-    let solution = match days::get_solution(args.day) {
-        Some(s) => s,
-        None => {
-            eprintln!("Error: Day {} is not implemented", args.day);
-            std::process::exit(1);
-        }
-    };
+    let solution = days::get_solution(args.day).ok_or(anyhow::anyhow!(
+        "Error: Day {} is not implemented",
+        args.day
+    ))?;
 
     let input_path = args
         .input
         .unwrap_or_else(|| PathBuf::from(format!("inputs/day{:02}.txt", args.day)));
 
-    let input = match fs::read_to_string(&input_path) {
-        Ok(content) => content,
-        Err(e) => {
-            eprintln!("Error reading input file {:?}: {}", input_path, e);
-            std::process::exit(1);
-        }
-    };
+    let input = fs::read_to_string(&input_path)?;
 
     let result = match part {
         Part::One => solution.part1(&input),
         Part::Two => solution.part2(&input),
-    };
+    }?;
 
     println!("{}", result);
+    Ok(())
 }
