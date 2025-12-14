@@ -173,7 +173,7 @@ mod tests {
 
     #[test]
     fn test_part1_sample() {
-        let output = Day05.part1(SAMPLE_INPUT);
+        let output = Day05.part1(SAMPLE_INPUT).unwrap();
         let re = Regex::new(r"\<3\>").unwrap();
         assert!(
             re.is_match(&output),
@@ -184,7 +184,7 @@ mod tests {
 
     #[test]
     fn test_part2_sample() {
-        let output = Day05.part2(SAMPLE_INPUT);
+        let output = Day05.part2(SAMPLE_INPUT).unwrap();
         let re = Regex::new(r"\<14\>").unwrap();
         assert!(
             re.is_match(&output),

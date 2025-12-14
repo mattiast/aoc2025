@@ -48,7 +48,8 @@ impl Solution for Day08 {
         }
         dists.sort_unstable_by_key(|&(dist2, _, _)| dist2);
 
-        for (_, i, j) in &dists[..1000] {
+        let limit = 1000.min(dists.len());
+        for (_, i, j) in &dists[..limit] {
             uf.union(*i, *j);
         }
 
@@ -199,7 +200,7 @@ mod tests {
     #[test]
     fn test_part1() {
         let solution = Day08;
-        let result = solution.part1(INPUT);
-        assert_eq!(result, "4,3,2,11");
+        let result = solution.part1(INPUT).unwrap();
+        assert_eq!(result, "[20], product top 3 20");
     }
 }

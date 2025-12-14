@@ -91,7 +91,7 @@ mod tests {
 811111111111119
 234234234234278
 818181911112111";
-        let output = Day03.part1(TEST_INPUT);
+        let output = Day03.part1(TEST_INPUT).unwrap();
         assert!(output.contains("357"), "Unexpected output: {}", output);
     }
     #[test]
@@ -100,7 +100,7 @@ mod tests {
 811111111111119
 234234234234278
 818181911112111";
-        let output = Day03.part2(TEST_INPUT);
+        let output = Day03.part2(TEST_INPUT).unwrap();
         assert!(
             output.contains("3121910778619"),
             "Unexpected output: {}",

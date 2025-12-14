@@ -163,7 +163,7 @@ mod tests {
 
     #[test]
     fn test_part1_sample() {
-        let output = Day04.part1(SAMPLE_INPUT);
+        let output = Day04.part1(SAMPLE_INPUT).unwrap();
         assert!(
             output.contains("13"),
             "Expected output to contain '13', got: {}",
@@ -172,7 +172,7 @@ mod tests {
     }
     #[test]
     fn test_part2_sample() {
-        let output = Day04.part2(SAMPLE_INPUT);
+        let output = Day04.part2(SAMPLE_INPUT).unwrap();
         assert!(output.contains("43"), "Unexpected output: {}", output);
     }
 

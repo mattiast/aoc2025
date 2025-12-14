@@ -358,7 +358,7 @@ mod tests {
     #[test]
     fn test_part1() {
         let solution = Day09;
-        let result = solution.part1(SAMPLE_INPUT);
+        let result = solution.part1(SAMPLE_INPUT).unwrap();
         assert!(result.contains("Maximum rectangle area: 50"));
     }
 
@@ -373,7 +373,7 @@ mod tests {
 9,5
 2,5
 2,3";
-        let result = solution.part2(input);
+        let result = solution.part2(input).unwrap();
         assert_eq!(result, "Maximum non-intersecting rectangle area: 24");
     }
 }

@@ -249,14 +249,14 @@ mod tests {
     #[test]
     fn test_part1() {
         let solution = Day06;
-        let result = solution.part1(INPUT);
+        let result = solution.part1(INPUT).unwrap();
         assert!(result.contains("4277556"));
     }
 
     #[test]
     fn test_part2() {
         let solution = Day06;
-        let result = solution.part2(INPUT);
+        let result = solution.part2(INPUT).unwrap();
         assert!(result.contains("3263827"));
     }
 }

@@ -149,14 +149,14 @@ mod tests {
     #[test]
     fn test_part1() {
         let solution = Day07;
-        let result = solution.part1(TEST_INPUT);
+        let result = solution.part1(TEST_INPUT).unwrap();
         assert!(result.contains("Splittings: 21"));
     }
 
     #[test]
     fn test_part2() {
         let solution = Day07;
-        let result = solution.part2(TEST_INPUT);
+        let result = solution.part2(TEST_INPUT).unwrap();
         assert!(result.contains("Timelines: 40"));
     }
 }

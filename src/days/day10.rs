@@ -221,7 +221,7 @@ mod tests {
     #[test]
     fn test_part1_sample() {
         let day10 = Day10;
-        let result = day10.part1(SAMPLE_INPUT);
+        let result = day10.part1(SAMPLE_INPUT).unwrap();
         // Just verify it runs without panicking
         assert_eq!(result, "Parsed 3 devices, total min size: 7");
     }
@@ -245,7 +245,7 @@ mod tests {
     #[test]
     fn test_part2_sample() {
         let day10 = Day10;
-        let result = day10.part2(SAMPLE_INPUT);
+        let result = day10.part2(SAMPLE_INPUT).unwrap();
         // Just verify it runs without panicking
         assert_eq!(result, "Parsed 3 devices, total min groups: 33");
     }
